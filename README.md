@@ -65,9 +65,9 @@ Detection probability at **-10 dB**:
 The OR rule raises detection at low SNR at the cost of a higher overall false-alarm
 rate (simulated Pfa: 0.098 / 0.271 / 0.404 for 1/3/5 nodes; theory 0.1 / 0.271 / 0.410).
 
-![Pd vs SNR](results/pd_vs_snr.png)
-![ROC at -10 dB](results/roc_minus10db.png)
-![Cooperative OR rule](results/cooperative_or.png)
+The three plots (Pd vs SNR, ROC at -10 dB, cooperative OR comparison) are not
+checked in as images; run `python scripts/run_simulation.py` to regenerate them
+into `results/` along with `results.json`, which holds every number behind them.
 
 ## Limitations and future work
 
