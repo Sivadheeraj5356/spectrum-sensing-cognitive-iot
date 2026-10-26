@@ -1,0 +1,83 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{times}
+\usepackage{amsmath}
+
+\linespread{1.15}
+\setlength{\parskip}{6pt}
+\setlength{\parindent}{0pt}
+
+\title{\textbf{Spectrum Sensing and Cognitive IoT Network}\\[4pt]
+\large Cooperative Energy-Detection-Based Spectrum Sensing: A Python Simulation Study}
+\author{Siva Dheeraj Ethamsetti \\ Phani Sai Nadha Reddy}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The radio spectrum used by IoT deployments is increasingly congested, while licensed
+bands can remain idle for long periods. Cognitive radio allows IoT devices to
+use a licensed band opportunistically, provided they can reliably detect whether the
+primary (licensed) user is active. This project designs and evaluates an energy
+detector for secondary IoT nodes and studies how cooperative sensing improves
+detection reliability. Each node measures the received signal energy over $N = 1000$
+samples of a BPSK primary signal in additive white Gaussian noise and compares it
+with a threshold fixed for a false-alarm probability of $0.1$; several nodes send
+1-bit decisions to a fusion center that applies the OR rule. A Monte Carlo
+simulation in Python (2000 trials per point, SNR swept from $-20$ to $+5$~dB) is
+validated against the Gaussian-approximation theory and used to produce
+probability-of-detection, ROC, and cooperative-gain curves. At $-10$~dB, the
+detection probability rises from about $0.80$ for a single node to $0.99$ with three
+nodes and $1.0$ with five nodes, at the cost of a higher overall false-alarm rate
+under the OR rule. The results quantify the reliability gain that cooperation brings
+to low-SNR spectrum sensing in cognitive IoT networks.
+\end{abstract}
+
+\section{Introduction}
+
+The number of connected IoT devices keeps growing, and the unlicensed bands most of
+them share are increasingly crowded. At the same time, licensed bands can remain
+idle for long stretches: when they do, the scarcity is not of spectrum itself, but
+of permission to use it. Cognitive radio addresses this
+mismatch by letting unlicensed (secondary) users operate in a licensed band whenever
+the primary user is absent, and vacating it when the primary user returns.
+
+Opportunistic access is only acceptable if secondary users can tell, quickly and
+reliably, whether the band is free. This is the spectrum sensing problem, and it is
+a hard one: the two kinds of error pull in opposite directions. A missed detection
+means an IoT device transmits on top of the licensed user and causes interference; a
+false alarm means free spectrum goes unused. A sensing scheme is therefore judged by
+its detection probability $P_d$ at a fixed false-alarm probability $P_{fa}$.
+
+Several sensing methods exist; energy detection is a simple non-coherent
+method: it needs no knowledge of the primary signal's
+waveform, timing, or carrier. The node simply measures the energy of the received
+samples,
+\[
+T = \frac{1}{N}\sum_{n=1}^{N} |y[n]|^2,
+\]
+and declares the band busy if $T$ exceeds a threshold. The threshold is derived from
+the noise-only distribution so that $P_{fa}$ stays at a chosen value; for large $N$
+the statistic is approximately Gaussian, which yields closed-form theoretical curves
+to validate against.
+
+Energy detection has known weaknesses. Its performance collapses at low SNR, and
+uncertainty in the noise power creates an ``SNR wall'' below which reliable
+detection is impossible no matter how many samples are taken. A single node is also
+vulnerable to deep fading and shadowing. Cooperative sensing mitigates exactly this:
+several nodes sense independently and report one-bit decisions to a fusion center.
+Under the OR rule, the band is declared busy if any node says busy, so a signal only
+has to be caught by one of the nodes - independent nodes rarely all miss it. The
+price is a higher overall false-alarm rate, which grows with the number of nodes.
+
+In this project we build a complete simulation of this setting in Python. The
+primary signal is BPSK in additive white Gaussian noise, each sensing interval uses
+$N = 1000$ samples, and the threshold is set for $P_{fa} = 0.1$. We estimate
+detection performance by Monte Carlo (2000 trials per point, SNR from $-20$ to
+$+5$~dB), overlay the closed-form theory to validate the model, and compare a single
+node with three- and five-node cooperation under the OR rule using $P_d$ vs.\ SNR
+and ROC curves. The simulation code, generated plots, and full results accompany
+this document in the project repository.
+
+\end{document}
