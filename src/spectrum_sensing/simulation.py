@@ -36,3 +36,20 @@ def monte_carlo_cooperative(threshold, snr_linear, n_samples, n_trials, k, prima
         stats = np.mean(y**2, axis=1)
         decisions |= stats > threshold
     return float(np.mean(decisions))
+
+
+def cooperative_statistics(snr_linear, n_samples, n_trials, k, primary_present, rng):
+    """Per-trial OR-fusion statistic: max over K independent nodes' energy statistics.
+
+    Returned raw so a ROC threshold sweep can reuse one pooled dataset
+    (common random numbers), which makes the empirical ROC monotone.
+    """
+    noise_power = 1.0 / snr_linear
+    noise = rng.normal(0.0, np.sqrt(noise_power), size=(n_trials, k, n_samples))
+    if primary_present:
+        signal = rng.choice([-1.0, 1.0], size=(n_trials, k, n_samples))
+        y = signal + noise
+    else:
+        y = noise
+    stats = np.mean(y**2, axis=2)
+    return stats.max(axis=1)
