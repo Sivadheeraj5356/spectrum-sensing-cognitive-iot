@@ -25,6 +25,7 @@ from spectrum_sensing import (  # noqa: E402
     threshold_for_pfa, theoretical_pd, snr_db_to_linear,
     monte_carlo_probability, monte_carlo_cooperative,
 )
+from spectrum_sensing.simulation import cooperative_statistics  # noqa: E402
 from spectrum_sensing.cooperative import cooperative_pd  # noqa: E402
 
 N_SAMPLES = 1000
@@ -84,18 +85,18 @@ def main():
     }
     out["cooperative"] = {"pd_sim": coop_sim, "pd_theory": coop_th, "pfa_sim": coop_pfa_sim}
 
-    # --- Plot 2 data: ROC at -10 dB --------------------------------------------
+    # --- Plot 2 data: ROC at -10 dB (pooled empirical sweep) -------------------
+    # Common random numbers: one pooled H0 and one pooled H1 statistic set per K,
+    # thresholds swept over the same data, so each empirical ROC is monotone.
     g_roc = snr_db_to_linear(ROC_SNR_DB)
     pfa_grid = np.linspace(0.001, 0.999, ROC_POINTS)
-    noise_power = 1.0 / g_roc
-    lams = [threshold_for_pfa(p, noise_power, N_SAMPLES) for p in pfa_grid]
     roc = {}
     for k in NODES:
-        roc_pfa = [monte_carlo_cooperative(l, g_roc, N_SAMPLES, args.trials, k, False, rng)
-                   for l in lams]
-        roc_pd = [monte_carlo_cooperative(l, g_roc, N_SAMPLES, args.trials, k, True, rng)
-                  for l in lams]
-        roc[k] = {"pfa": roc_pfa, "pd": roc_pd}
+        s0 = cooperative_statistics(g_roc, N_SAMPLES, args.trials, k, False, rng)
+        s1 = cooperative_statistics(g_roc, N_SAMPLES, args.trials, k, True, rng)
+        lams = np.quantile(s0, 1.0 - pfa_grid)
+        roc[k] = {"pfa": [float(np.mean(s0 > l)) for l in lams],
+                  "pd": [float(np.mean(s1 > l)) for l in lams]}
     out["roc_at_minus10db"] = roc
 
     # --- Plots ------------------------------------------------------------------
